@@ -12,7 +12,7 @@ input_dim = sizes[0]
 hidden_dim = sizes[1]
 output_dim = sizes[2]
 learning_rate = 0.001
-epochs = 100
+epochs = 200
 
 # generate a random number from the seed
 if len(sys.argv) > 2:
@@ -22,13 +22,15 @@ else:
 np.random.seed(seed)
 
 # Create a simple dataset
-SAMPLES = 100
+SAMPLES = 10000
 X = np.random.rand(SAMPLES, sizes[0])
-y = np.array(np.random.normal(size=SAMPLES)>0,dtype=np.float32)
+y = np.array(np.random.normal(size=(SAMPLES,1))>0,dtype=np.float32)
 
 # Convert data to PyTorch tensors
-X_tensor = torch.tensor(X, dtype=torch.float)
-y_tensor = torch.tensor(y, dtype=torch.float)
+X_tensor = torch.tensor(X, dtype=torch.float32)
+y_tensor = torch.tensor(y, dtype=torch.float32)
+print(X_tensor.shape)
+print(y_tensor.shape)
 
 # Define a simple neural network class
 class SimpleNN(nn.Module):
@@ -81,14 +83,15 @@ for name, param in model.named_parameters():
 
 # Use the trained model for predictions
 # Generate a random input tensor
-# random_input = torch.rand(1, input_dim)
+random_input = torch.rand(1, input_dim)
+print("Random input is:", random_input)
 
 # test_input_tensor = torch.tensor([0.5652, 0.6091, 0.2224, 0.7096, 0.6958, 0.4827, 0.9137, 0.3462, 0.3952, 0.5003],dtype=torch.float32)
-test_input_tensor = torch.tensor([0.5652, 0.6091, 0.2224, 0.7096],dtype=torch.float32)
+# test_input_tensor = torch.tensor([0.5652, 0.6091, 0.2224, 0.7096],dtype=torch.float32)
 
 # Make a prediction
 with torch.no_grad():
-    prediction = model(test_input_tensor)
+    prediction = model(random_input)
 
 # Print the prediction result
 print("Prediction result is:", prediction)

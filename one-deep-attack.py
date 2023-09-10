@@ -75,13 +75,6 @@ def binary_search(offset=None, direction=None, low=-1e3, high=1e3):
             # In a non-linear region and the interval is small enough
             if len(relus) == 0:
                 relus.append(offset + direction*mid)
-                print(low,high)
-                print("f_low",f_low)
-                print("f_mid",f_mid)
-                print("f_high",f_high)
-                print(torch.abs(f_mid - (f_high + f_low)/2))
-                print(torch.abs(f_mid - (f_high + f_low)/2)/(high-low))
-                print(torch.abs(f_mid - (f_high + f_low)/2)/((high-low)**.5))
             else:
                 add_point = True
                 for point in relus:
@@ -91,12 +84,6 @@ def binary_search(offset=None, direction=None, low=-1e3, high=1e3):
                         add_point = False
                 
                 if add_point:
-                    print("f_low",f_low)
-                    print("f_mid",f_mid)
-                    print("f_high",f_high)
-                    print(np.abs(f_mid - (f_high + f_low)/2))
-                    print(np.abs(f_mid - (f_high + f_low)/2)/(high-low))
-                    print(torch.abs(f_mid - (f_high + f_low)/2)/((high-low)**.5))
                     relus.append(offset + direction*mid)
             return
 
@@ -111,9 +98,8 @@ def binary_search(offset=None, direction=None, low=-1e3, high=1e3):
     return relus
 
 # critical_points = binary_search()
-critical_points = binary_search(offset=torch.tensor([-0.0196, -0.0019,  0.0074, -0.0221],dtype = torch.float32), direction = torch.tensor([-0.0062, -0.0085,  0.0054,  0.0013],dtype = torch.float32), low=-1e3, high=1e3)
-# critical_points = binary_search(offset=torch.tensor([ 0.0254, -0.0059,  0.0048,  0.0029,  0.0129, -0.0063]), direction = torch.tensor([-0.0012,  0.0153,  0.0280, -0.0050,  0.0057,  0.0084]))
-# critical_points = [torch.tensor([-0.0619, -0.0925,  0.3997, -0.0861]),torch.tensor([-0.2873, -0.4128,  1.6692, -0.3590])]
+# critical_points = binary_search(torch.tensor([0.0087,  0.0013,  0.0087, -0.0030]), torch.tensor([ 0.0054,  0.0062,  0.0149, -0.0057]))
+critical_points = [torch.tensor([-0.4061, -0.5023, -0.1710, -0.2894]),torch.tensor([-1.1723, -1.4534, -0.4910, -0.8357])]
 print("critical point is:", critical_points)
 
 # get fc1 from loaded_model
@@ -128,9 +114,10 @@ print(fc1.bias)
 print(fc2.weight)
 print(fc2.bias)
 
+# Recover the inner layer
 A1_hat = torch.ones(size=(hidden_dim, input_dim))
 B1_hat = torch.zeros(hidden_dim)
-epsilon = 0.01
+epsilon = 0.1
 i = 0
 for point in critical_points:
     alpha = 0.0
@@ -138,45 +125,44 @@ for point in critical_points:
         e_j = torch.zeros(input_dim)
         e_j[j] = 1.0
 
-        # if i==1:
-        #     alpha_plus = 0.0
-        #     alpha_minus = loaded_model(point) - loaded_model(point-epsilon*e_j)
-        # else:
-        #     alpha_plus = loaded_model(point+epsilon*e_j) - loaded_model(point)
-        #     alpha_minus = 0.0
+        alpha_plus = (loaded_model(point+epsilon*e_j) - loaded_model(point)) / epsilon
+        alpha_minus = (loaded_model(point-epsilon*e_j) - loaded_model(point)) / epsilon
 
-        alpha_plus = loaded_model(point+epsilon*e_j) - loaded_model(point)
-        alpha_minus = loaded_model(point) - loaded_model(point-epsilon*e_j)
-    
-        # if abs(alpha_plus)<abs(alpha_minus):
-        #     alpha_plus = 0.0
-        # else:
-        #     alpha_minus = 0.0
-
-        print(alpha_plus,alpha_minus,alpha_plus-alpha_minus,alpha)
         if j==0:
             alpha = alpha_plus - alpha_minus
-        
+
+        print(alpha_plus,alpha_minus,alpha)
         A1_hat[i,j] = (alpha_plus - alpha_minus) / alpha
-        # print(alpha_plus-alpha_minus,alpha,A1_hat[i,j])
     B1_hat[i] = -torch.matmul(A1_hat[i], point)
-    i += 1    
+    i+=1   
 
-# B1_hat = B1_hat.t()
 print(f'Recovered Weight Matrix is: {A1_hat}')
 print(f'Recovered Bias Vector is: {B1_hat}')
 
-# A1_hat = torch.tensor([[1.0000, -0.9615, 3.7258, 2.9035],[1.0000, -0.4286, -0.0203, 0.9974]])
-A1_hat = torch.tensor([[0.1232, -0.1185,  0.4591,  0.3578],[0.4098, -0.1761, -0.0092,  0.4088]])
-B1_hat = torch.tensor([-0.1550,  0.2071])
-# for point in critical_points:
-#     B1_hat = -torch.matmul(A1_hat, point)
-#     print(torch.matmul(fc1.weight, point) + fc1.bias)
-#     print(torch.matmul(A1_hat, point) + B1_hat)
+# Extract row signs
+index = 0
+for point in critical_points:
+    hidden_val = torch.matmul(A1_hat, point) + B1_hat
+    hidden_val_plus = hidden_val.clone()
+    hidden_val_minus = hidden_val.clone()
+    hidden_val_plus[index] += 1.0
+    hidden_val_minus[index] -= 1.0
+
+    x_plus = torch.linalg.lstsq(A1_hat, (hidden_val_plus-B1_hat).t()).solution
+    x_minus = torch.linalg.lstsq(A1_hat, (hidden_val_minus-B1_hat).t()).solution
+
+    f_x = loaded_model(point)
+    f_x_plus = loaded_model(x_plus.t())
+    f_x_minus = loaded_model(x_minus.t())
+    
+    if torch.abs(f_x_plus-f_x) < torch.abs(f_x_minus-f_x):
+        A1_hat[index] = -A1_hat[index]
+        B1_hat[index] = -B1_hat[index]
+
+    index+=1
+
 print(f'Recovered Weight Matrix is: {A1_hat}')
 print(f'Recovered Bias Vector is: {B1_hat}')
-
-
 
 # Define a simple neural network class
 class ZeroNN(nn.Module):
@@ -210,14 +196,8 @@ while not random_input_status:
             random_input_status = False
 
 random_output = loaded_model(random_input)
-print(random_input)
-print(random_hidden)
-print(random_output)
 
-# tensor([0.2503, 0.6028, 0.4449, 0.5687])
-# tensor([2.2787, 0.8652], grad_fn=<ReluBackward0>)
-# tensor([0.1984], grad_fn=<AddBackward0>)
-
+# Recover the outer layer
 A2_hat = torch.zeros(size=(output_dim, hidden_dim))
 B2_hat = torch.zeros(output_dim)
 for i in range(hidden_dim):
@@ -258,15 +238,17 @@ recovered_model.fc2.weight = nn.Parameter(A2_hat)
 recovered_model.fc2.bias = nn.Parameter(B2_hat)
 
 # Use the trained model for predictions
-# test_input_tensor = torch.tensor([0.5652, 0.6091, 0.2224, 0.7096, 0.6958, 0.4827, 0.9137, 0.3462, 0.3952, 0.5003],dtype=torch.float32)
-test_input_tensor = torch.tensor([0.5652, 0.6091, 0.2224, 0.7096],dtype=torch.float32)
+test_input_tensor = torch.tensor([0.5584, 0.2044, 0.2384, 0.6188],dtype=torch.float32)
 
 # Make a prediction
 with torch.no_grad():
+    test_input_tensor = torch.tensor([0.5584, 0.2044, 0.2384, 0.6188],dtype=torch.float32)
     prediction = loaded_model(test_input_tensor)
+    test_input_tensor = torch.tensor([0.5584, 0.2044, 0.2384, 0.6188],dtype=torch.float32)
     prediction_hat = recovered_model(test_input_tensor)
 
 # Print the prediction result
+print("Test One")
 print("Prediction result is:", prediction)
 print("Recovered Prediction result is:", prediction_hat)
 
@@ -277,5 +259,6 @@ with torch.no_grad():
     prediction_hat = recovered_model(random_input)
 
 # Print the prediction result
+print("Test Two")
 print("Prediction result is:", prediction)
 print("Recovered Prediction result is:", prediction_hat)

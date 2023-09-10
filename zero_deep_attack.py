@@ -46,9 +46,9 @@ B_hat = torch.zeros(output_dim)
 for i in range(input_dim):
     with torch.no_grad():
         x_hat = x.clone()
-        print(x_hat)
         x_hat[i] += 1.0
-
+        print(x_hat)
+        
         # get the output of the network
         y_hat = torch.matmul(A, x_hat) + B
 

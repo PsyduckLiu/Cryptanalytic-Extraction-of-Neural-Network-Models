@@ -38,7 +38,8 @@ loaded_model.eval()  # Set the model to evaluation mode
 print("Model loaded.")
 
 # Use the trained model for predictions
-test_input_tensor = torch.tensor([0.5652, 0.6091, 0.2224, 0.7096, 0.6958, 0.4827, 0.9137, 0.3462, 0.3952, 0.5003],dtype=torch.float32)
+# random_input = torch.rand(1, input_dim)
+test_input_tensor = torch.tensor([[0.5584, 0.2044, 0.2384, 0.6188]],dtype=torch.float32)
 
 # Make a prediction
 with torch.no_grad():

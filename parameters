@@ -1,31 +1,33 @@
 # 4-2-1
-# type1 0.01
-offset is: tensor([ 0.0087, -0.0042, -0.0111,  0.0092])
-direction is: tensor([ 0.0164, -0.0125, -0.0133,  0.0136])
-
-# type2 0.001
-# offset is: tensor([ 0.0021, -0.0002, -0.0016,  0.0004])
-# direction is: tensor([-1.9926e-04,  1.5358e-03,  2.1154e-03, -7.0824e-05])
-
 # type2 0.01
-# offset is: tensor([ 0.0025,  0.0040, -0.0090, -0.0210])
-# direction is: tensor([ 0.0197,  0.0098, -0.0177, -0.0099])
-# offset is: tensor([ 0.0057,  0.0036,  0.0190, -0.0043])
-# direction is: tensor([ 0.0019,  0.0027, -0.0107,  0.0023])
-offset is: tensor([-0.0196, -0.0019,  0.0074, -0.0221])
-direction is: tensor([-0.0062, -0.0085,  0.0054,  0.0013])
+offset is: tensor([ 0.0233,  0.0038, -0.0123, -0.0181])
+direction is: tensor([-0.0100,  0.0016, -0.0026, -0.0079])
 
-# type2 0.001 0.01
-# offset is: tensor([ 0.0002,  0.0012, -0.0017,  0.0006])
-# direction is: tensor([-0.0059,  0.0054, -0.0027,  0.0144])
+offset is: tensor([-2.8718e-04,  1.4764e-03, -1.4874e-03, -4.9019e-05])
+direction is: tensor([-0.0015, -0.0019, -0.0006, -0.0011])
 
-# 6-2-1
-# type2 0.01
-# offset is: tensor([-0.0083,  0.0027,  0.0216, -0.0280,  0.0047, -0.0114])
-# direction is: tensor([-8.0725e-03,  7.8191e-03, -7.1668e-03, -1.5227e-02,  5.2037e-05, 1.8917e-02])
+critical_points = [torch.tensor([-0.4061, -0.5023, -0.1710, -0.2894]),torch.tensor([-1.1723, -1.4534, -0.4910, -0.8357])]
+0.3
+Recovered Weight Matrix is: tensor([[ 1.0000, -0.7049,  0.0605, -0.8153],
+        [ 1.0000, -1.6064, -0.9677, -0.7127]], grad_fn=<CopySlices>)
 
-# type2 0.01
-# offset is: tensor([ 0.0254, -0.0059,  0.0048,  0.0029,  0.0129, -0.0063])
-# direction is: tensor([-0.0012,  0.0153,  0.0280, -0.0050,  0.0057,  0.0084])
-# offset is: tensor([ 0.0006, -0.0010,  0.0017,  0.0025])
-# direction is: tensor([-1.4245e-02,  4.1363e-03,  5.0710e-05,  1.1963e-02])
+0.1 
+Recovered Weight Matrix is: tensor([[ 1.0000, -0.7048,  0.0602, -0.8153],
+        [ 1.0000, -1.5958, -0.9683, -0.7178]], grad_fn=<CopySlices>)
+
+0.01
+Recovered Weight Matrix is: tensor([[ 1.0000, -0.7037,  0.0567, -0.8146],
+        [ 1.0000, -1.4818, -0.9743, -0.7718]], grad_fn=<CopySlices>)
+
+0.005
+Recovered Weight Matrix is: tensor([[ 1.0000, -0.7024,  0.0526, -0.8138],
+        [ 1.0000, -1.3973, -0.9788, -0.8118]], grad_fn=<CopySlices>)
+
+0.05
+Recovered Weight Matrix is: tensor([[ 1.0000, -0.7047,  0.0599, -0.8152],
+        [ 1.0000, -1.5805, -0.9691, -0.7250]], grad_fn=<CopySlices>)
+
+
+offset is: tensor([ 0.0087,  0.0013,  0.0087, -0.0030])
+direction is: tensor([ 0.0054,  0.0062,  0.0149, -0.0057])
+critical point is: [tensor([-0.2717, -0.3207, -0.7650,  0.2930]), tensor([ 0.4108,  0.4629,  1.1181, -0.4274])]
